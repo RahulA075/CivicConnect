@@ -8,6 +8,7 @@ import com.civicconnect.modules.admin.entity.Department;
 import com.civicconnect.modules.admin.entity.Municipality;
 import com.civicconnect.modules.admin.repository.DepartmentRepository;
 import com.civicconnect.modules.admin.repository.MunicipalityRepository;
+import com.civicconnect.modules.iam.dto.UpdateProfileRequest;
 import com.civicconnect.modules.iam.dto.UserResponse;
 import com.civicconnect.modules.iam.entity.Role;
 import com.civicconnect.modules.iam.entity.User;
@@ -56,9 +57,21 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserResponse updateProfile(UUID userId, Object updateRequest) {
-        // Generic update handled in ProfileController — placeholder for admin use
-        throw new UnsupportedOperationException("Use PATCH /api/v1/users/me for profile updates");
+    public UserResponse updateProfile(UUID userId, UpdateProfileRequest request) {
+        User user = findActive(userId);
+        if (request.getFullName() != null && !request.getFullName().isBlank()) {
+            user.setFullName(request.getFullName().trim());
+        }
+        if (request.getPhone() != null && !request.getPhone().equals(user.getPhone())) {
+            if (userRepository.existsByPhoneAndDeletedAtIsNull(request.getPhone())) {
+                throw new ConflictException("PHONE_TAKEN", "Phone number is already registered");
+            }
+            user.setPhone(request.getPhone());
+        }
+        if (request.getCity() != null) {
+            user.setCity(request.getCity().trim());
+        }
+        return toDto(userRepository.save(user));
     }
 
     @Override

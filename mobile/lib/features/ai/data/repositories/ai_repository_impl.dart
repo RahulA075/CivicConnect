@@ -6,7 +6,6 @@ import '../../domain/entities/ai_analysis.dart';
 import '../../domain/entities/duplicate_candidate.dart';
 import '../../domain/repositories/ai_repository.dart';
 import '../datasources/ai_remote_datasource.dart';
-import '../models/ai_analysis_model.dart';
 
 class AiRepositoryImpl implements AiRepository {
   final AiRemoteDataSource _remote;

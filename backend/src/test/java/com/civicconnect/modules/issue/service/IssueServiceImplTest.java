@@ -41,6 +41,7 @@ class IssueServiceImplTest {
     @Mock private IssueRepository                issueRepository;
     @Mock private IssueCategoryRepository        categoryRepository;
     @Mock private VoteRepository                 voteRepository;
+    @Mock private IssueImageRepository           imageRepository;
     @Mock private IssueStatusHistoryRepository   historyRepository;
     @Mock private UserRepository                 userRepository;
     @Mock private WardRepository                 wardRepository;
@@ -60,7 +61,7 @@ class IssueServiceImplTest {
     @BeforeEach
     void setUp() {
         service = new IssueServiceImpl(
-                issueRepository, categoryRepository, voteRepository,
+                issueRepository, categoryRepository, voteRepository, imageRepository,
                 historyRepository, userRepository, wardRepository,
                 trackingIdGenerator, eventPublisher);
     }

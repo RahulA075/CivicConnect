@@ -40,6 +40,7 @@ public class IssueServiceImpl implements IssueService {
     private final IssueRepository            issueRepository;
     private final IssueCategoryRepository    categoryRepository;
     private final VoteRepository             voteRepository;
+    private final IssueImageRepository       imageRepository;
     private final IssueStatusHistoryRepository historyRepository;
     private final UserRepository             userRepository;
     private final WardRepository             wardRepository;
@@ -454,6 +455,11 @@ public class IssueServiceImpl implements IssueService {
     private IssueResponse toResponse(Issue issue, UUID requestingUserId) {
         boolean upvoted = requestingUserId != null &&
                 voteRepository.existsByIssueIdAndUserId(issue.getId(), requestingUserId);
+        List<String> imageUrls = issue.getId() == null ? List.of()
+                : imageRepository.findActiveByIssueId(issue.getId()).stream()
+                        .map(IssueImage::getCdnUrl)
+                        .filter(Objects::nonNull)
+                        .toList();
 
         return IssueResponse.builder()
                 .id(issue.getId())
@@ -484,6 +490,15 @@ public class IssueServiceImpl implements IssueService {
                 .reporterName(issue.isAnonymous() ? "Anonymous"
                         : (issue.getReportedBy() != null
                                 ? issue.getReportedBy().getFullName() : null))
+                .previewImageUrl(imageUrls.isEmpty() ? null : imageUrls.get(0))
+                .imageUrls(imageUrls)
+                .assignedTo(issue.getAssignedTo() != null
+                        ? issue.getAssignedTo().getFullName() : null)
+                .assignedToId(issue.getAssignedTo() != null
+                        ? issue.getAssignedTo().getId() : null)
+                .municipalityName(issue.getMunicipality() != null
+                        ? issue.getMunicipality().getName() : null)
+                .upvotedByMe(upvoted)
                 .citizenRating(issue.getCitizenRating())
                 .build();
     }

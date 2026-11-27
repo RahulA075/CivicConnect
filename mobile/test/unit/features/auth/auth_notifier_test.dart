@@ -45,6 +45,7 @@ AuthNotifier _buildNotifier({
       register: register ?? MockRegisterUseCase(),
       logout:   logout   ?? MockLogoutUseCase(),
       getMe:    getMe    ?? MockGetMeUseCase(),
+      readAccessToken: () async => 'access.token.here',
     );
 
 void main() {

@@ -52,9 +52,12 @@ class IssueModel extends IssueEntity {
         departmentName:   json['departmentName'] as String?,
         municipalityName: json['municipalityName'] as String?,
         imageUrls: (json['imageUrls'] as List<dynamic>?)
-                ?.map((e) => e as String)
+                ?.whereType<String>()
                 .toList() ??
-            [],
+            [
+              if (json['previewImageUrl'] is String)
+                json['previewImageUrl'] as String,
+            ],
         resolvedAt: json['resolvedAt'] != null
             ? DateTime.parse(json['resolvedAt'] as String)
             : null,

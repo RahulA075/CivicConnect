@@ -2,7 +2,9 @@ package com.civicconnect.modules.iam.controller;
 
 import com.civicconnect.common.response.ApiResponse;
 import com.civicconnect.common.security.CurrentUser;
+import com.civicconnect.modules.iam.dto.UpdateProfileRequest;
 import com.civicconnect.modules.iam.dto.UserResponse;
+import jakarta.validation.Valid;
 import com.civicconnect.modules.iam.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -34,6 +36,15 @@ public class UserController {
             @CurrentUser UserDetails principal) {
         UUID userId = UUID.fromString(principal.getUsername());
         return ResponseEntity.ok(ApiResponse.success(userService.getMe(userId)));
+    }
+
+    @Operation(summary = "Update current user profile")
+    @PatchMapping("/me")
+    public ResponseEntity<ApiResponse<UserResponse>> updateMe(
+            @CurrentUser UserDetails principal,
+            @Valid @RequestBody UpdateProfileRequest request) {
+        UUID userId = UUID.fromString(principal.getUsername());
+        return ResponseEntity.ok(ApiResponse.success(userService.updateProfile(userId, request)));
     }
 
     @Operation(summary = "Get user by ID (admin/supervisor only)")

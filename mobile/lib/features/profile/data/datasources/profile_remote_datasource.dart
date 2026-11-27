@@ -16,11 +16,16 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   const ProfileRemoteDataSourceImpl(this._dio);
   final Dio _dio;
 
+  static Map<String, dynamic> _unwrap(Map<String, dynamic> envelope) =>
+      envelope['data'] is Map<String, dynamic>
+          ? envelope['data'] as Map<String, dynamic>
+          : envelope;
+
   @override
   Future<ProfileModel> getProfile() async {
     try {
       final resp = await _dio.get<Map<String, dynamic>>(ApiEndpoints.me);
-      return ProfileModel.fromJson(resp.data!);
+      return ProfileModel.fromJson(_unwrap(resp.data!));
     } catch (e) {
       throw ErrorHandler.handle(e);
     }
@@ -41,7 +46,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
           if (bio      != null) 'bio':      bio,
         },
       );
-      return ProfileModel.fromJson(resp.data!);
+      return ProfileModel.fromJson(_unwrap(resp.data!));
     } catch (e) {
       throw ErrorHandler.handle(e);
     }
@@ -57,7 +62,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
         '${ApiEndpoints.me}/avatar',
         data: formData,
       );
-      return resp.data!['avatarUrl'] as String;
+      return _unwrap(resp.data!)['avatarUrl'] as String;
     } catch (e) {
       throw ErrorHandler.handle(e);
     }
