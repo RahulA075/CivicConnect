@@ -40,6 +40,13 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
+    // Don't create an account without a municipality while the list is
+    // still loading or failed to load; an empty list means none exist yet.
+    if (!ref.read(municipalitiesProvider).hasValue) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Please wait for municipalities to load')));
+      return;
+    }
     final notifier = ref.read(authNotifierProvider.notifier);
     final success  = await notifier.register(
       email:    _emailCtrl.text.trim(),

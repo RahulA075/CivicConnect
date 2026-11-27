@@ -30,7 +30,8 @@ const _user = UserEntity(
   isActive: true,
 );
 
-Widget _buildPage(MockRegisterUseCase registerMock) {
+Widget _buildPage(MockRegisterUseCase registerMock,
+    {Future<List<Map<String, dynamic>>> Function()? loadMunicipalities}) {
   final router = GoRouter(
     initialLocation: '/register',
     routes: [
@@ -41,9 +42,11 @@ Widget _buildPage(MockRegisterUseCase registerMock) {
   );
   return ProviderScope(
     overrides: [
-      municipalitiesProvider.overrideWith((ref) async => [
+      municipalitiesProvider.overrideWith((ref) =>
+          loadMunicipalities?.call() ??
+          Future.value([
             {'id': 'muni-1', 'name': 'Test City', 'state': 'TN'},
-          ]),
+          ])),
       authNotifierProvider.overrideWith((ref) => AuthNotifier(
             login: MockLoginUseCase(),
             register: registerMock,
@@ -107,5 +110,34 @@ void main() {
           phone: null,
           municipalityId: 'muni-1',
         )).called(1);
+  });
+
+  testWidgets('does not register while municipalities failed to load',
+      (tester) async {
+    final registerMock = MockRegisterUseCase();
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(_buildPage(registerMock,
+        loadMunicipalities: () => Future.error(Exception('offline'))));
+    await tester.pumpAndSettle();
+    expect(find.text('Could not load municipalities'), findsOneWidget);
+
+    final fields = find.byType(TextFormField);
+    await tester.enterText(fields.at(0), 'New User');
+    await tester.enterText(fields.at(1), 'new@example.com');
+    await tester.enterText(fields.at(3), 'SecurePass@1!');
+    await tester.enterText(fields.at(4), 'SecurePass@1!');
+    await tester.tap(find.widgetWithText(AppButton, 'Create Account'));
+    await tester.pumpAndSettle();
+
+    verifyNever(() => registerMock(
+          email: any(named: 'email'),
+          password: any(named: 'password'),
+          fullName: any(named: 'fullName'),
+          phone: any(named: 'phone'),
+          municipalityId: any(named: 'municipalityId'),
+        ));
   });
 }
