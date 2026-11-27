@@ -15,6 +15,7 @@ abstract interface class AuthRepository {
     required String password,
     required String fullName,
     String? phone,
+    String? municipalityId,
   });
 
   /// [purpose]: 'REGISTRATION' | 'PASSWORD_RESET' | 'PHONE_CHANGE'

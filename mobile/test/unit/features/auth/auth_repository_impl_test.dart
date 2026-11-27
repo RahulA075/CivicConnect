@@ -166,6 +166,7 @@ void main() {
             password: any(named: 'password'),
             fullName: any(named: 'fullName'),
             phone:    any(named: 'phone'),
+            municipalityId: any(named: 'municipalityId'),
           )).thenAnswer((_) async => _authModel);
 
       final result = await repository.register(
@@ -189,6 +190,7 @@ void main() {
             password: any(named: 'password'),
             fullName: any(named: 'fullName'),
             phone:    any(named: 'phone'),
+            municipalityId: any(named: 'municipalityId'),
           )).thenThrow(const ConflictException('Email taken'));
 
       final result = await repository.register(

@@ -17,7 +17,11 @@ abstract interface class AuthRemoteDataSource {
     required String password,
     required String fullName,
     String? phone,
+    String? municipalityId,
   });
+
+  /// Active municipalities a citizen can pick at sign-up: `{id, name, state}`.
+  Future<List<Map<String, dynamic>>> getMunicipalities();
 
   Future<void> verifyOtp({
     required String identifier,
@@ -61,6 +65,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     required String password,
     required String fullName,
     String? phone,
+    String? municipalityId,
   }) async {
     try {
       final resp = await _dio.post<Map<String, dynamic>>(
@@ -70,10 +75,24 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
           'password': password,
           'fullName': fullName,
           if (phone != null && phone.isNotEmpty) 'phone': phone,
+          if (municipalityId != null) 'municipalityId': municipalityId,
         },
       );
       final data = _unwrap(resp.data!);
       return AuthResponseModel.fromJson(data);
+    } catch (e) {
+      throw ErrorHandler.handle(e);
+    }
+  }
+
+  // ── Municipalities ────────────────────────────────────────────────────────
+  @override
+  Future<List<Map<String, dynamic>>> getMunicipalities() async {
+    try {
+      final resp =
+          await _dio.get<Map<String, dynamic>>(ApiEndpoints.municipalities);
+      final data = resp.data!['data'] as List<dynamic>? ?? const [];
+      return data.cast<Map<String, dynamic>>();
     } catch (e) {
       throw ErrorHandler.handle(e);
     }

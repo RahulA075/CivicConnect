@@ -113,6 +113,10 @@ final themeModeProvider =
 final authRemoteDsProvider = Provider<AuthRemoteDataSource>(
     (ref) => AuthRemoteDataSourceImpl(ref.watch(dioProvider)));
 
+final municipalitiesProvider =
+    FutureProvider.autoDispose<List<Map<String, dynamic>>>(
+        (ref) => ref.watch(authRemoteDsProvider).getMunicipalities());
+
 final authRepositoryProvider = Provider<AuthRepository>(
     (ref) => AuthRepositoryImpl(ref.watch(authRemoteDsProvider)));
 

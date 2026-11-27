@@ -37,10 +37,15 @@ class AuthRepositoryImpl implements AuthRepository {
     required String password,
     required String fullName,
     String? phone,
+    String? municipalityId,
   }) async {
     try {
       final response = await _remote.register(
-          email: email, password: password, fullName: fullName, phone: phone);
+          email: email,
+          password: password,
+          fullName: fullName,
+          phone: phone,
+          municipalityId: municipalityId);
       // Persist tokens so app is usable before OTP verification
       await _persistSession(response.tokens, response.user);
       return Right(response.user);

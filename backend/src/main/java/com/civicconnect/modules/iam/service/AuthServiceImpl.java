@@ -10,6 +10,8 @@ import com.civicconnect.common.exception.ResourceNotFoundException;
 import com.civicconnect.common.security.JwtTokenProvider;
 import com.civicconnect.common.util.HashUtils;
 import com.civicconnect.config.AppProperties;
+import com.civicconnect.modules.admin.entity.Municipality;
+import com.civicconnect.modules.admin.repository.MunicipalityRepository;
 import com.civicconnect.modules.iam.dto.*;
 import com.civicconnect.modules.iam.entity.OtpVerification;
 import com.civicconnect.modules.iam.entity.RefreshToken;
@@ -58,6 +60,7 @@ public class AuthServiceImpl implements AuthService {
     private final AppProperties          appProperties;
     private final JavaMailSender         mailSender;
     private final AuditEventPublisher    auditEventPublisher;
+    private final MunicipalityRepository municipalityRepository;
 
     private static final SecureRandom RANDOM = new SecureRandom();
 
@@ -79,6 +82,14 @@ public class AuthServiceImpl implements AuthService {
         Role citizenRole = roleRepository.findByName(UserRole.CITIZEN)
             .orElseThrow(() -> new ResourceNotFoundException("Role CITIZEN not found — check DB seeding"));
 
+        Municipality municipality = null;
+        if (request.getMunicipalityId() != null) {
+            municipality = municipalityRepository.findById(request.getMunicipalityId())
+                .filter(Municipality::isActive)
+                .orElseThrow(() -> new BusinessRuleException(
+                    "INVALID_MUNICIPALITY", "Selected municipality does not exist or is inactive"));
+        }
+
         User user = User.builder()
             .fullName(request.getFullName())
             .email(request.getEmail() != null ? request.getEmail().toLowerCase() : null)
@@ -86,6 +97,7 @@ public class AuthServiceImpl implements AuthService {
             .passwordHash(passwordEncoder.encode(request.getPassword()))
             .authProvider(AuthProvider.LOCAL)
             .city(request.getCity())
+            .municipality(municipality)
             .role(citizenRole)
             .emailVerified(false)
             .active(true)

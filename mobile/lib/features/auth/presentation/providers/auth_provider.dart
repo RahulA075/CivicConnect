@@ -92,10 +92,16 @@ class AuthNotifier extends StateNotifier<AuthState> {
     required String password,
     required String fullName,
     String? phone,
+    String? municipalityId,
   }) async {
     state = const AuthLoading();
     final result = await _register(
-      email: email, password: password, fullName: fullName, phone: phone);
+      email: email,
+      password: password,
+      fullName: fullName,
+      phone: phone,
+      municipalityId: municipalityId,
+    );
     return result.fold(
       (failure) {
         state = AuthError(failure);
