@@ -8,7 +8,8 @@ import lombok.Data;
 @Data
 public class UpdateProfileRequest {
 
-    @Size(min = 2, max = 200, message = "Full name must be 2–200 characters")
+    @Size(max = 200, message = "Full name must be 2–200 characters")
+    @Pattern(regexp = "^\\s*\\S.*\\S\\s*$", message = "Full name must be 2–200 characters")
     private String fullName;
 
     @Pattern(regexp = "^\\+?[1-9]\\d{6,14}$", message = "Must be a valid phone number")
