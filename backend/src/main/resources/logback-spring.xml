@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <springProfile name="dev">
+        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %highlight(%-5level) [%cyan(%thread)] [%yellow(%X{requestId})] %green(%logger{36}) - %msg%n</pattern>
+            </encoder>
+        </appender>
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+        <logger name="com.civicconnect" level="DEBUG"/>
+        <logger name="org.hibernate.SQL" level="DEBUG"/>
+        <logger name="org.springframework.security" level="INFO"/>
+    </springProfile>
+
+    <springProfile name="prod,staging">
+        <!-- Structured JSON logs for ELK ingestion -->
+        <appender name="JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+                <includeMdcKeyName>requestId</includeMdcKeyName>
+                <includeMdcKeyName>traceId</includeMdcKeyName>
+                <includeMdcKeyName>spanId</includeMdcKeyName>
+                <customFields>{"app":"civicconnect"}</customFields>
+            </encoder>
+        </appender>
+        <root level="INFO">
+            <appender-ref ref="JSON_CONSOLE"/>
+        </root>
+        <logger name="com.civicconnect" level="INFO"/>
+    </springProfile>
+
+    <!-- Always suppress noisy framework loggers -->
+    <logger name="org.hibernate.orm.jdbc.bind"          level="WARN"/>
+    <logger name="org.springframework.web.servlet"       level="WARN"/>
+    <logger name="com.zaxxer.hikari"                     level="WARN"/>
+    <logger name="org.springframework.amqp"              level="WARN"/>
+
+</configuration>

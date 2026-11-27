@@ -1,0 +1,186 @@
+spring:
+  application:
+    name: civicconnect
+
+  profiles:
+    active: ${APP_PROFILE:dev}
+
+  # ── Virtual Threads (Project Loom — Java 21+) ──────────────────────
+  # Enable when deploying on Java 21: spring.threads.virtual.enabled=true
+
+  # ── Database ────────────────────────────────────────────────────
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/civicconnect}
+    username: ${DB_USERNAME:civicconnect_app}
+    password: ${DB_PASSWORD:changeme}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      pool-name: CivicConnectPool
+      maximum-pool-size: ${DB_POOL_MAX:20}
+      minimum-idle: ${DB_POOL_MIN:5}
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  # ── JPA / Hibernate ─────────────────────────────────────────────
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        default_schema: public
+        jdbc:
+          time_zone: UTC
+          batch_size: 25
+        order_inserts: true
+        order_updates: true
+
+  # ── Flyway ──────────────────────────────────────────────────────
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: false
+    validate-on-migrate: true
+    out-of-order: false
+
+  # ── Redis ───────────────────────────────────────────────────────
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 16
+          max-idle: 8
+          min-idle: 2
+
+  # ── RabbitMQ ────────────────────────────────────────────────────
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+    virtual-host: ${RABBITMQ_VHOST:/}
+    publisher-confirm-type: correlated
+    publisher-returns: true
+
+  # ── Mail ────────────────────────────────────────────────────────
+  mail:
+    host: ${MAIL_HOST:localhost}
+    port: ${MAIL_PORT:1025}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
+  # ── Jackson ─────────────────────────────────────────────────────
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+      fail-on-empty-beans: false
+    deserialization:
+      fail-on-unknown-properties: false
+    default-property-inclusion: NON_NULL
+    time-zone: UTC
+
+  # ── Cache ───────────────────────────────────────────────────────
+  cache:
+    type: redis
+    redis:
+      time-to-live: 600000  # 10 minutes default
+
+# ── Server ──────────────────────────────────────────────────────────
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    context-path: /
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html
+  error:
+    include-message: never
+    include-stacktrace: never
+    include-binding-errors: never
+
+# ── Actuator ────────────────────────────────────────────────────────
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when_authorized
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+  tracing:
+    sampling:
+      probability: ${TRACING_SAMPLE_RATE:0.1}
+
+# ── SpringDoc / Swagger ─────────────────────────────────────────────
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: alpha
+    tagsSorter: alpha
+    display-request-duration: true
+    try-it-out-enabled: true
+  show-actuator: false
+  default-produces-media-type: application/json
+
+# ── App-specific ────────────────────────────────────────────────────
+app:
+  # JWT
+  jwt:
+    secret: ${JWT_SECRET:ThisIsAVeryLongSecretKeyForCivicConnectJwtTokenGenerationThatIsAtLeast64Chars!!}
+    access-token-expiry-ms: ${JWT_ACCESS_EXPIRY_MS:900000}        # 15 minutes
+    refresh-token-expiry-ms: ${JWT_REFRESH_EXPIRY_MS:2592000000}  # 30 days
+
+  # CORS
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:4200}
+    max-age-seconds: 3600
+
+  # Rate limiting (per IP, per minute)
+  rate-limit:
+    capacity: ${RATE_LIMIT_CAPACITY:100}
+    refill-tokens: ${RATE_LIMIT_REFILL:100}
+    refill-duration-seconds: ${RATE_LIMIT_DURATION:60}
+
+  # Media storage
+  storage:
+    bucket: ${STORAGE_BUCKET:civicconnect-media-dev}
+    region: ${STORAGE_REGION:ap-south-1}
+    cdn-base-url: ${CDN_BASE_URL:http://localhost:9000/civicconnect-media-dev}
+
+  # SLA defaults (hours) when no policy configured
+  sla:
+    default-resolution-hours: 72
+
+  # Notification
+  notification:
+    otp-expiry-minutes: 10
+    otp-max-attempts: 5
+    fcm-credentials-path: ${FCM_CREDENTIALS_PATH:}
+
+  # AI Analysis (Phase 11)
+  ai:
+    api-key: ${AI_API_KEY:}
+    text-model: ${AI_TEXT_MODEL:gpt-4o-mini}
+    vision-model: ${AI_VISION_MODEL:gpt-4o}
+    base-url: ${AI_BASE_URL:https://api.openai.com/v1}
+    timeout-seconds: ${AI_TIMEOUT_SECONDS:30}
+    auto-apply-confidence-threshold: ${AI_AUTO_APPLY_THRESHOLD:0.85}
+    duplicate-check-max-candidates: ${AI_DUPLICATE_MAX_CANDIDATES:50}
+    enabled: ${AI_ENABLED:true}

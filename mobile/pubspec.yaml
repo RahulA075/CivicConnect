@@ -1,0 +1,118 @@
+name: civicconnect
+description: CivicConnect – Civic issue reporting and tracking platform.
+publish_to: none
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+  flutter: ">=3.22.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # ── State Management ─────────────────────────────────────────────
+  flutter_riverpod: ^2.5.1
+  riverpod_annotation: ^2.3.5
+
+  # ── Navigation ───────────────────────────────────────────────────
+  go_router: ^14.2.0
+
+  # ── Networking ───────────────────────────────────────────────────
+  dio: ^5.4.3+1
+  http: ^1.2.2
+  # retrofit added in Phase 5 with retrofit_generator when @RestApi datasources are implemented
+
+  # ── Local Storage ────────────────────────────────────────────────
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  flutter_secure_storage: ^9.2.2
+
+  # ── Firebase ─────────────────────────────────────────────────────
+  firebase_core: ^3.3.0
+  firebase_messaging: ^15.1.0
+  firebase_analytics: ^11.2.0
+  firebase_crashlytics: ^4.0.4
+  flutter_local_notifications: ^17.2.2
+
+  # ── Maps ─────────────────────────────────────────────────────────
+  google_maps_flutter: ^2.9.0
+  flutter_polyline_points: ^2.1.0
+
+  # ── Media ────────────────────────────────────────────────────────
+  image_picker: ^1.1.2
+  flutter_image_compress: ^2.3.0
+
+  # ── Localization ─────────────────────────────────────────────────
+  intl: ^0.20.0
+
+  # ── UI Utilities ─────────────────────────────────────────────────
+  cached_network_image: ^3.3.1
+  shimmer: ^3.0.0
+  lottie: ^3.1.2
+  flutter_svg: ^2.0.10+1
+  gap: ^3.0.1
+  badges: ^3.1.2
+  pinput: ^5.0.0
+
+  # ── Permissions & Platform ───────────────────────────────────────
+  permission_handler: ^11.3.1
+  geolocator: ^12.0.0
+
+  # ── Offline / Serialization ───────────────────────────────────────
+  json_annotation: ^4.9.0
+  freezed_annotation: ^2.4.1
+  equatable: ^2.0.5
+
+  # ── Utilities ────────────────────────────────────────────────────
+  logger: ^2.4.0
+  connectivity_plus: ^6.0.3
+  package_info_plus: ^8.0.2
+  url_launcher: ^6.3.0
+  share_plus: ^10.0.0
+  path_provider: ^2.1.4
+  uuid: ^4.4.2
+  dartz: ^0.10.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+  # ── Code Generation ───────────────────────────────────────────────
+  build_runner: ^2.4.12
+  riverpod_generator: ^2.4.3
+  json_serializable: ^6.8.0
+  freezed: ^2.4.7
+  # hive_generator and retrofit_generator added in Phase 5 when
+  # @HiveType and @RestApi annotations are introduced.
+
+
+  # ── Testing ───────────────────────────────────────────────────────
+  mocktail: ^1.0.4
+  path_provider_platform_interface: ^2.1.3
+  plugin_platform_interface: ^2.1.8
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/icons/
+    - assets/l10n/
+
+  # fonts:               ← Uncomment after adding Outfit .ttf files to assets/fonts/
+  #   - family: Outfit
+  #     fonts:
+  #       - asset: assets/fonts/Outfit-Light.ttf
+  #         weight: 300
+  #       - asset: assets/fonts/Outfit-Regular.ttf
+  #         weight: 400
+  #       - asset: assets/fonts/Outfit-Medium.ttf
+  #         weight: 500
+  #       - asset: assets/fonts/Outfit-SemiBold.ttf
+  #         weight: 600
+  #       - asset: assets/fonts/Outfit-Bold.ttf
+  #         weight: 700
