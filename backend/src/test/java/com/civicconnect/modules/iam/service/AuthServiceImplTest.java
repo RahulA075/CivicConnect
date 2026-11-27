@@ -9,6 +9,7 @@ import com.civicconnect.common.exception.ConflictException;
 import com.civicconnect.common.security.JwtTokenProvider;
 import com.civicconnect.common.util.HashUtils;
 import com.civicconnect.config.AppProperties;
+import com.civicconnect.modules.admin.repository.MunicipalityRepository;
 import com.civicconnect.modules.iam.dto.*;
 import com.civicconnect.modules.iam.entity.*;
 import com.civicconnect.modules.iam.repository.*;
@@ -46,6 +47,7 @@ class AuthServiceImplTest {
     @Mock private JwtTokenProvider       jwtTokenProvider;
     @Mock private JavaMailSender         mailSender;
     @Mock private AuditEventPublisher    auditEventPublisher;
+    @Mock private MunicipalityRepository municipalityRepository;
 
     private AuthServiceImpl authService;
 
@@ -66,7 +68,7 @@ class AuthServiceImplTest {
         authService = new AuthServiceImpl(
                 userRepository, roleRepository, refreshTokenRepository,
                 otpRepository, passwordEncoder, jwtTokenProvider,
-                props, mailSender, auditEventPublisher);
+                props, mailSender, auditEventPublisher, municipalityRepository);
     }
 
     // ── register ───────────────────────────────────────────────────────────
@@ -137,6 +139,25 @@ class AuthServiceImplTest {
 
         assertThat(resp.getAccessToken()).isEqualTo("access.token");
         verify(auditEventPublisher).loginSuccess(any(), anyString(), any());
+    }
+
+    @Test
+    @DisplayName("register() rejects an unknown or inactive municipality")
+    void register_rejectsInvalidMunicipality() {
+        RegisterRequest req = buildRegisterRequest();
+        UUID municipalityId = UUID.randomUUID();
+        req.setMunicipalityId(municipalityId);
+
+        when(userRepository.existsByEmailIgnoreCaseAndDeletedAtIsNull(anyString())).thenReturn(false);
+        when(roleRepository.findByName(UserRole.CITIZEN))
+                .thenReturn(Optional.of(buildRole(UserRole.CITIZEN)));
+        when(municipalityRepository.findById(municipalityId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> authService.register(req))
+                .isInstanceOf(BusinessRuleException.class)
+                .satisfies(ex -> assertThat(((BusinessRuleException) ex).getErrorCode())
+                        .isEqualTo("INVALID_MUNICIPALITY"));
+        verify(userRepository, never()).save(any(User.class));
     }
 
     @Test

@@ -2,10 +2,12 @@ package com.civicconnect.modules.issue.dto;
 
 import com.civicconnect.common.enums.IssuePriority;
 import com.civicconnect.common.enums.IssueStatus;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 /** Response body for issue read endpoints */
@@ -37,5 +39,11 @@ public class IssueResponse {
     private UUID          wardId;
     private String        reporterName;
     private String        previewImageUrl;
+    private List<String>  imageUrls;
+    private String        assignedTo;
+    private UUID          assignedToId;
+    private String        municipalityName;
+    @JsonProperty("isUpvotedByMe")
+    private boolean       upvotedByMe;
     private Integer       citizenRating;
 }

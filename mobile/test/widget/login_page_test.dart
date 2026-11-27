@@ -61,6 +61,7 @@ Widget buildLoginPage({
             register: MockRegisterUseCase(),
             logout:   MockLogoutUseCase(),
             getMe:    getMeMock,
+            readAccessToken: () async => 'access.token',
           )),
     ],
     child: MaterialApp.router(routerConfig: router),

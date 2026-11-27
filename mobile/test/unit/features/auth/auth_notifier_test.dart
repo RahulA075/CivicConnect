@@ -45,6 +45,7 @@ AuthNotifier _buildNotifier({
       register: register ?? MockRegisterUseCase(),
       logout:   logout   ?? MockLogoutUseCase(),
       getMe:    getMe    ?? MockGetMeUseCase(),
+      readAccessToken: () async => 'access.token.here',
     );
 
 void main() {
@@ -143,6 +144,7 @@ void main() {
             password: any(named: 'password'),
             fullName: any(named: 'fullName'),
             phone:    any(named: 'phone'),
+            municipalityId: any(named: 'municipalityId'),
           )).thenAnswer((_) async => const Right(_testUser));
 
       final notifier = _buildNotifier(register: regMock);
@@ -162,6 +164,7 @@ void main() {
             password: any(named: 'password'),
             fullName: any(named: 'fullName'),
             phone:    any(named: 'phone'),
+            municipalityId: any(named: 'municipalityId'),
           )).thenAnswer((_) async => const Left(ConflictFailure('Email taken')));
 
       final notifier = _buildNotifier(register: regMock);

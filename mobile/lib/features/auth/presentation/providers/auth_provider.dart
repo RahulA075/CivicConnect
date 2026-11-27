@@ -34,45 +34,57 @@ class AuthNotifier extends StateNotifier<AuthState> {
     required RegisterUseCase register,
     required LogoutUseCase   logout,
     required GetMeUseCase    getMe,
+    Future<String?> Function()? readAccessToken,
   })  : _login    = login,
         _register = register,
         _logout   = logout,
         _getMe    = getMe,
+        _readAccessToken = readAccessToken ?? SecureStorage.getAccessToken,
         super(const AuthInitial());
 
   final LoginUseCase    _login;
   final RegisterUseCase _register;
   final LogoutUseCase   _logout;
   final GetMeUseCase    _getMe;
+  final Future<String?> Function() _readAccessToken;
 
   Future<void> checkSession() async {
-    // Skip API call immediately if no token stored — go straight to login
-    final token = await SecureStorage.getAccessToken();
+    String? token;
+    try {
+      token = await _readAccessToken();
+    } catch (_) {
+      token = null;
+    }
     if (token == null || token.isEmpty) {
       state = const AuthUnauthenticated();
       return;
     }
     state = const AuthLoading();
+    await _loadCurrentUser();
+  }
+
+  Future<bool> _loadCurrentUser() async {
     final result = await _getMe();
-    result.fold(
-      (failure) => state = const AuthUnauthenticated(),
-      (user)    => state = AuthAuthenticated(user),
+    return result.fold(
+      (failure) {
+        state = const AuthUnauthenticated();
+        return false;
+      },
+      (user) {
+        state = AuthAuthenticated(user);
+        return true;
+      },
     );
   }
 
   Future<bool> login({required String email, required String password}) async {
     state = const AuthLoading();
     final result = await _login(email: email, password: password);
-    return result.fold(
-      (failure) {
-        state = AuthError(failure);
-        return false;
-      },
-      (_) async {
-        await checkSession();
-        return true;
-      },
-    );
+    if (result.isLeft()) {
+      state = AuthError(result.fold((f) => f, (_) => const UnknownFailure()));
+      return false;
+    }
+    return _loadCurrentUser();
   }
 
   Future<bool> register({
@@ -80,10 +92,16 @@ class AuthNotifier extends StateNotifier<AuthState> {
     required String password,
     required String fullName,
     String? phone,
+    String? municipalityId,
   }) async {
     state = const AuthLoading();
     final result = await _register(
-      email: email, password: password, fullName: fullName, phone: phone);
+      email: email,
+      password: password,
+      fullName: fullName,
+      phone: phone,
+      municipalityId: municipalityId,
+    );
     return result.fold(
       (failure) {
         state = AuthError(failure);

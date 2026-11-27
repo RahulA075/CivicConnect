@@ -10,6 +10,7 @@ abstract final class ApiEndpoints {
   static const String logout        = '$_base/auth/logout';
   static const String verifyOtp     = '$_base/auth/verify-otp';
   static const String forgotPassword = '$_base/auth/forgot-password';
+  static const String municipalities = '$_base/public/municipalities';
 
   // ── Users ─────────────────────────────────────────────────────────────
   static const String me     = '$_base/users/me';

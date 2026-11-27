@@ -12,9 +12,15 @@ abstract final class Validators {
   // ── Password ────────────────────────────────────────────────────
   static String? password(String? value) {
     if (value == null || value.isEmpty) return 'Password is required';
-    if (value.length < 8) return 'Password must be at least 8 characters';
+    // Mirrors the backend RegisterRequest password policy.
+    if (value.length < 10) return 'Password must be at least 10 characters';
+    if (value.length > 100) return 'Password must be at most 100 characters';
     if (!RegExp(r'[A-Z]').hasMatch(value)) return 'Include at least one uppercase letter';
+    if (!RegExp(r'[a-z]').hasMatch(value)) return 'Include at least one lowercase letter';
     if (!RegExp(r'[0-9]').hasMatch(value)) return 'Include at least one number';
+    if (!RegExp(r'''[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?]''').hasMatch(value)) {
+      return 'Include at least one special character';
+    }
     return null;
   }
 

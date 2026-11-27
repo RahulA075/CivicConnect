@@ -3,6 +3,8 @@ package com.civicconnect.modules.iam.dto;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 
+import java.util.UUID;
+
 /**
  * Request body for POST /api/v1/auth/register
  *
@@ -45,4 +47,7 @@ public class RegisterRequest {
 
     @Size(max = 100, message = "City must be ≤ 100 characters")
     private String city;
+
+    /** Municipality the citizen belongs to; optional but required for local issue feeds. */
+    private UUID municipalityId;
 }

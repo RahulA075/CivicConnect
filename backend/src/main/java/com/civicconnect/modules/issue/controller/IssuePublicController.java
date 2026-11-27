@@ -2,6 +2,7 @@ package com.civicconnect.modules.issue.controller;
 
 import com.civicconnect.common.response.ApiResponse;
 import com.civicconnect.common.response.PagedResponse;
+import com.civicconnect.modules.admin.dto.CategoryResponse;
 import com.civicconnect.modules.issue.dto.IssueResponse;
 import com.civicconnect.modules.issue.entity.IssueCategory;
 import com.civicconnect.modules.issue.repository.IssueCategoryRepository;
@@ -53,10 +54,27 @@ public class IssuePublicController {
 
     @Operation(summary = "Get issue categories for a municipality")
     @GetMapping("/categories")
-    public ResponseEntity<ApiResponse<List<IssueCategory>>> getCategories(
+    public ResponseEntity<ApiResponse<List<CategoryResponse>>> getCategories(
             @RequestParam UUID municipalityId) {
         return ResponseEntity.ok(ApiResponse.success(
-                categoryRepository.findTopLevelByMunicipality(municipalityId)));
+                categoryRepository.findTopLevelByMunicipality(municipalityId).stream()
+                        .map(IssuePublicController::toCategoryResponse)
+                        .toList()));
+    }
+
+    private static CategoryResponse toCategoryResponse(IssueCategory c) {
+        return CategoryResponse.builder()
+                .id(c.getId())
+                .municipalityId(c.getMunicipality() != null ? c.getMunicipality().getId() : null)
+                .departmentId(c.getDepartment() != null ? c.getDepartment().getId() : null)
+                .departmentName(c.getDepartment() != null ? c.getDepartment().getName() : null)
+                .name(c.getName())
+                .description(c.getDescription())
+                .iconName(c.getIconName())
+                .colorHex(c.getColorHex())
+                .sortOrder(c.getSortOrder())
+                .active(c.isActive())
+                .build();
     }
 
     @Operation(summary = "Get map issues within radius (public) — includes lat/lng for markers")

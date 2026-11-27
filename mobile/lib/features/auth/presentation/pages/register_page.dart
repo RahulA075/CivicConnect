@@ -26,6 +26,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   final _phoneCtrl = TextEditingController();
   final _passCtrl  = TextEditingController();
   final _confCtrl  = TextEditingController();
+  String? _municipalityId;
 
   @override
   void dispose() {
@@ -39,12 +40,20 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
+    // Don't create an account without a municipality while the list is
+    // still loading or failed to load; an empty list means none exist yet.
+    if (!ref.read(municipalitiesProvider).hasValue) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Please wait for municipalities to load')));
+      return;
+    }
     final notifier = ref.read(authNotifierProvider.notifier);
     final success  = await notifier.register(
       email:    _emailCtrl.text.trim(),
       password: _passCtrl.text,
       fullName: _nameCtrl.text.trim(),
       phone:    _phoneCtrl.text.trim().isEmpty ? null : _phoneCtrl.text.trim(),
+      municipalityId: _municipalityId,
     );
     if (success && mounted) {
       context.push(Routes.verifyOtp,
@@ -114,10 +123,15 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       (v == null || v.trim().isEmpty) ? null : Validators.phone(v),
                 ),
                 const Gap(14),
+                _MunicipalityField(
+                  value: _municipalityId,
+                  onChanged: (id) => setState(() => _municipalityId = id),
+                ),
+                const Gap(14),
                 AppTextField(
                   controller: _passCtrl,
                   label: 'Password',
-                  hint: 'Min. 8 characters',
+                  hint: 'Min. 10 chars, incl. A-z, 0-9 and a symbol',
                   obscureText: true,
                   prefixIcon: const Icon(Icons.lock_outline),
                   textInputAction: TextInputAction.next,
@@ -182,6 +196,52 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _MunicipalityField extends ConsumerWidget {
+  const _MunicipalityField({required this.value, required this.onChanged});
+  final String? value;
+  final ValueChanged<String?> onChanged;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final municipalities = ref.watch(municipalitiesProvider);
+    return municipalities.when(
+      loading: () => const LinearProgressIndicator(),
+      error: (_, __) => Row(
+        children: [
+          const Expanded(child: Text('Could not load municipalities')),
+          TextButton(
+            onPressed: () => ref.invalidate(municipalitiesProvider),
+            child: const Text('Retry'),
+          ),
+        ],
+      ),
+      data: (items) {
+        if (items.isEmpty) return const SizedBox.shrink();
+        return DropdownButtonFormField<String>(
+          key: const Key('municipalityField'),
+          value: value,
+          isExpanded: true,
+          decoration: const InputDecoration(
+            labelText: 'Municipality',
+            prefixIcon: Icon(Icons.location_city_outlined),
+          ),
+          items: [
+            for (final m in items)
+              DropdownMenuItem(
+                value: m['id'] as String,
+                child: Text(m['state'] != null
+                    ? '${m['name']}, ${m['state']}'
+                    : m['name'] as String? ?? ''),
+              ),
+          ],
+          onChanged: onChanged,
+          validator: (v) => v == null ? 'Select your municipality' : null,
+        );
+      },
     );
   }
 }

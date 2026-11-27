@@ -5,7 +5,6 @@ import '../../../../core/di/providers.dart';
 import '../../../../shared/widgets/loading_indicator.dart';
 import '../../../../shared/widgets/error_view.dart';
 import '../../domain/entities/ai_analysis.dart';
-import '../widgets/issue_ai_summary_card.dart';
 
 /// Full-page AI insights screen for a specific issue.
 /// Accessible from issue detail via "View AI Analysis" button.
